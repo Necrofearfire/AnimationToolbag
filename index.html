@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animation Toolbag</title>
+    <title>Frame Rate Converter</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -42,36 +42,47 @@
             margin-top: 10px;
             padding: 10px;
             cursor: pointer;
+            border-radius: 20px;
+        }
+        .instructions {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Animation Toolbag</h2>
+        <h2>Frame Rate Converter</h2>
+        <div class="instructions">
+            <p>Fill in exactly two fields and press "Convert" to calculate the third. Press "Clear" to reset the fields.</p>
+        </div>
         <button onclick="showTab('frameConverter')">Frame Converter</button>
         <button onclick="showTab('bpmToFpsConverter')">BPM to FPS</button>
         
         <div id="frameConverter" class="tab active">
             <h3>Convert Frames Based on Speed</h3>
             <label for="originalFrames">Original Frames:</label>
-            <input type="text" id="originalFrames" placeholder="Enter frame count" oninput="validateAndConvert(this, updateFrameConversion)">
+            <input type="text" id="originalFrames" placeholder="Enter frame count">
             <label for="speedMultiplier">Speed Multiplier:</label>
-            <input type="text" id="speedMultiplier" placeholder="Enter speed multiplier" oninput="validateAndConvert(this, updateFrameConversion)">
+            <input type="text" id="speedMultiplier" placeholder="Enter speed multiplier">
             <label for="newFrames">New Frames:</label>
-            <input type="text" id="newFrames" placeholder="Enter new frames" oninput="validateAndConvert(this, updateFrameConversion)">
+            <input type="text" id="newFrames" placeholder="Enter new frames">
         </div>
         
         <div id="bpmToFpsConverter" class="tab">
             <h3>Convert BPM to FPS</h3>
             <label for="bpm">BPM:</label>
-            <input type="text" id="bpm" placeholder="Enter BPM" oninput="validateAndConvert(this, updateBpmToFps)">
+            <input type="text" id="bpm" placeholder="Enter BPM">
             <label for="frameCount">Frames per Beat:</label>
-            <input type="text" id="frameCount" placeholder="Enter frame count per beat" oninput="validateAndConvert(this, updateBpmToFps)">
+            <input type="text" id="frameCount" placeholder="Enter frame count per beat">
             <label for="fps">FPS:</label>
-            <input type="text" id="fps" placeholder="Enter FPS" oninput="validateAndConvert(this, updateBpmToFps)">
+            <input type="text" id="fps" placeholder="Enter FPS">
         </div>
         
-        <button onclick="clearFields()">Clear Fields</button>
+        <button onclick="convert()">Convert</button>
+        <button onclick="clearFields()">Clear</button>
     </div>
     
     <script>
@@ -80,16 +91,32 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        function validateAndConvert(input, callback) {
-            input.value = input.value.replace(/[^0-9.]/g, '');
-            callback();
+        function validateInputs() {
+            let inputs = document.querySelectorAll('input');
+            let filledFields = 0;
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    filledFields++;
+                }
+            });
+            return filledFields === 2; // Only proceed if exactly two fields are filled
         }
 
-        function updateFrameConversion() {
+        function convert() {
             let originalFrames = parseFloat(document.getElementById('originalFrames').value);
             let speedMultiplier = parseFloat(document.getElementById('speedMultiplier').value);
             let newFrames = parseFloat(document.getElementById('newFrames').value);
-            
+
+            let bpm = parseFloat(document.getElementById('bpm').value);
+            let frameCount = parseFloat(document.getElementById('frameCount').value);
+            let fps = parseFloat(document.getElementById('fps').value);
+
+            if (!validateInputs()) {
+                alert('Please fill exactly two fields to perform the conversion!');
+                return;
+            }
+
+            // Frame converter logic
             if (!isNaN(originalFrames) && !isNaN(speedMultiplier)) {
                 document.getElementById('newFrames').value = (originalFrames / speedMultiplier).toFixed(2);
             } else if (!isNaN(originalFrames) && !isNaN(newFrames)) {
@@ -97,13 +124,8 @@
             } else if (!isNaN(speedMultiplier) && !isNaN(newFrames)) {
                 document.getElementById('originalFrames').value = (newFrames * speedMultiplier).toFixed(2);
             }
-        }
 
-        function updateBpmToFps() {
-            let bpm = parseFloat(document.getElementById('bpm').value);
-            let frameCount = parseFloat(document.getElementById('frameCount').value);
-            let fps = parseFloat(document.getElementById('fps').value);
-            
+            // BPM to FPS converter logic
             if (!isNaN(bpm) && !isNaN(frameCount)) {
                 document.getElementById('fps').value = ((bpm / 60) * frameCount).toFixed(2);
             } else if (!isNaN(bpm) && !isNaN(fps)) {
